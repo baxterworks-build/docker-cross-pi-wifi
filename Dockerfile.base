@@ -1,0 +1,21 @@
+FROM debian:unstable-slim
+ENV ARCH=arm
+ENV DEBARCH=armhf
+ENV CROSS_COMPILE=arm-linux-gnueabihf-
+ENV CC=${CROSS_COMPILE}gcc
+ENV VERSION=1.20210527-1 
+#http://archive.raspberrypi.org/debian/pool/main/r/raspberrypi-firmware/raspberrypi-kernel-headers_1.20210527-1_armhf.deb
+ENV KERNELDIR=/src/linux/
+ENV ARCHIVE=http://archive.raspberrypi.org/debian/pool/main/r/raspberrypi-firmware/
+RUN mkdir /src/
+
+RUN apt update && apt -y --no-install-recommends install ca-certificates wget git file xz-utils crossbuild-essential-${DEBARCH} build-essential libssl-dev
+RUN wget -q ${ARCHIVE}/raspberrypi-kernel-headers_${VERSION}_${DEBARCH}.deb && \ 
+	ar x *.deb && \ 
+	rm *.deb && \ 
+	tar -ax -C /src/ --strip-components=3 -f data.tar.xz && \ 
+	rm *.xz && \
+	cd /src/ && \ 
+	ls -1 | grep -v v7 | xargs rm -rf && rm -r 5.*
+
+WORKDIR /src
